@@ -9,7 +9,18 @@
 #import <Foundation/Foundation.h>
 #import <WeexSDK/WXEventModuleProtocol.h>
 #import <WeexSDK/WXModuleProtocol.h>
+#import "WXDemoViewController.h"
 
+typedef void (^PushQRvc)(NSString *Data);
+
+
+@protocol WXESlectorDelegate <NSObject>
+
+-(void)PushToQRView;
+
+@end
 @interface WXEventModule : NSObject <WXEventModuleProtocol, WXModuleProtocol>
+@property (nonatomic, weak) id <WXESlectorDelegate> delegate;
+@property (nonatomic,copy)PushQRvc push;
 
 @end

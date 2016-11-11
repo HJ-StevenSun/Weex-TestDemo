@@ -9,6 +9,7 @@
 #import <UIKit/UIKit.h>
 #import <SRWebSocket.h>
 
+
 @interface WXDemoViewController : UIViewController<SRWebSocketDelegate>
 
 @property (nonatomic, strong) NSString *script;
@@ -16,6 +17,7 @@
 
 @property (nonatomic, strong) SRWebSocket *hotReloadSocket;
 @property (nonatomic, strong) NSString *source;
+
 
 @end
 

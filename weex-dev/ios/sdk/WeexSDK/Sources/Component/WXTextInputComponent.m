@@ -54,7 +54,7 @@
 //attribute
 @property (nonatomic, strong) UIColor *placeholderColor;
 @property (nonatomic, strong) NSString *placeholder;
-@property (nonatomic) NSNumber *maxLength;
+@property (nonatomic) NSUInteger maxLength;
 //style
 @property (nonatomic) WXPixelType fontSize;
 @property (nonatomic) WXTextStyle fontStyle;
@@ -93,10 +93,7 @@
         
         _inputView = [[WXTextInputView alloc] init];
         if (attributes[@"type"]) {
-            NSString *type = [WXConvert NSString:attributes[@"type"]];
-            if (type) {
-                [self setType: type];
-            }
+            [self setType: attributes[@"type"]];
         }
         
         if (attributes[@"autofocus"]) {
@@ -105,25 +102,19 @@
         if (attributes[@"disabled"]) {
             [_inputView setEnabled:![attributes[@"disabled"] boolValue]];
         }
-        
-        if (attributes[@"value"]) {
-            NSString* value = [WXConvert NSString:attributes[@"value"]];
-            if (value) {
-                _inputView.text = value;
-            }
-        }
         if (attributes[@"placeholder"]) {
-            NSString *placeHolder = [WXConvert NSString:attributes[@"placeholder"]];
-            if (placeHolder) {
-                _placeholder = placeHolder;
-            }
-        }
-        if (!_placeholder) {
+            _placeholder = attributes[@"placeholder"];
+            _inputView.placeholder = _placeholder;
+        } else {
             _placeholder = @"";
         }
-        
+        if (attributes[@"value"]) {
+            _inputView.text = attributes[@"value"];
+        }
         if (attributes[@"maxlength"]) {
-            _maxLength = [NSNumber numberWithUnsignedInteger:[attributes[@"maxlength"] integerValue]];
+            _maxLength = [attributes[@"maxlength"] integerValue];
+        } else {
+            _maxLength = 0;
         }
         
         if (styles[@"color"]) {
@@ -241,10 +232,7 @@
 - (void)updateAttributes:(NSDictionary *)attributes
 {
     if (attributes[@"type"]) {
-        NSString *type = [WXConvert NSString:attributes[@"type"]];
-        if (type) {
-            [self setType: type];
-        }
+        [self setType: attributes[@"type"]];
     }
     if (attributes[@"autofocus"]) {
         [self setAutofocus:[attributes[@"autofocus"] boolValue]];
@@ -253,22 +241,15 @@
         [_inputView setEnabled:![attributes[@"disabled"] boolValue]];
     }
     if (attributes[@"maxlength"]) {
-        _maxLength = [NSNumber numberWithInteger:[attributes[@"maxlength"] integerValue]];
+        _maxLength = [attributes[@"maxlength"] integerValue];
     }
     
     if (attributes[@"placeholder"]) {
-        NSString* placeholder = [WXConvert NSString:attributes[@"placeholder"]];
-        if (placeholder) {
-            _inputView.placeholder = _placeholder;
-            _placeholder = placeholder;
-        }
+        _placeholder = attributes[@"placeholder"];
+        _inputView.placeholder = _placeholder;
     }
-    
     if (attributes[@"value"]) {
-        NSString* value = [WXConvert NSString:attributes[@"value"]];
-        if (value) {
-            _inputView.text = value;
-        }
+        _inputView.text = attributes[@"value"];
     }
     
     [self setPlaceholderAttributedString];
@@ -291,7 +272,7 @@
         _fontStyle = [WXConvert WXTextStyle:styles[@"fontStyle"]];
     }
     if (styles[@"fontFamily"]) {
-        _fontFamily = [WXConvert NSString:styles[@"fontFamily"]];
+        _fontFamily = styles[@"fontFamily"];
     }
     if (styles[@"textAlign"]) {
         [_inputView setTextAlignment:[WXConvert NSTextAlignment:styles[@"textAlign"]]] ;
@@ -370,7 +351,7 @@
         
         NSUInteger newLength = oldLength - rangeLength + replacementLength;
         
-        return newLength <= [_maxLength integerValue] ;
+        return newLength <= _maxLength ;
     }
     return YES;
 }

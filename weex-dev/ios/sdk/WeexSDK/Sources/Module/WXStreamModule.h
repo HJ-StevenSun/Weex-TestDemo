@@ -11,7 +11,4 @@
 
 @interface WXStreamModule : NSObject <WXModuleProtocol>
 
-- (void)fetch:(NSDictionary *)options callback:(WXModuleCallback)callback progressCallback:(WXModuleKeepAliveCallback)progressCallback;
-- (void)sendHttp:(NSDictionary*)param callback:(WXModuleCallback)callback;
-
 @end

@@ -9,12 +9,16 @@
 #import "WXEventModule.h"
 #import "WXDemoViewController.h"
 #import <WeexSDK/WXBaseViewController.h>
-
+#import "QRCode_ViewController.h"
+#import "WXDemoViewController.h"
 @implementation WXEventModule
 
 @synthesize weexInstance;
 
 WX_EXPORT_METHOD(@selector(openURL:))
+WX_EXPORT_METHOD(@selector(showAlert))
+WX_EXPORT_METHOD(@selector(QRScan:callback:))
+
 
 - (void)openURL:(NSString *)url
 {
@@ -31,6 +35,27 @@ WX_EXPORT_METHOD(@selector(openURL:))
     
     [[weexInstance.viewController navigationController] pushViewController:controller animated:YES];
 }
+-(void)showAlert
+{
+    UIAlertView *alert=[[UIAlertView alloc]initWithTitle:@"hello" message:@"hello" delegate:self cancelButtonTitle:@"hello" otherButtonTitles:nil, nil];
+    
+    [alert show];
+    [_delegate PushToQRView];
+}
+- (void)QRScan:(NSString *)url callback:(WXModuleCallback)callback
+{
+    
+    
+    
+    QRCode_ViewController *qrcode =[[QRCode_ViewController alloc]init];
+    /*Block回调*/
+    qrcode.Scan=^(NSString *data){
+        
+        callback(@{@"result":@"222"});
+        
+     
+    };
 
+}
 @end
 

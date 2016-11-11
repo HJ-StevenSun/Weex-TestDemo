@@ -8,13 +8,11 @@
 
 #import "UIViewController+WXDemoNaviBar.h"
 #import "WXScannerVC.h"
-#import "WXDefine.h"
 #import <objc/runtime.h>
 
 @implementation UIViewController (WXDemoNaviBar)
 
-- (void)setupNaviBar
-{
+- (void)setupNaviBar {
     UIScreenEdgePanGestureRecognizer *edgePanGestureRecognizer = [[UIScreenEdgePanGestureRecognizer alloc] initWithTarget:self action:@selector(edgePanGesture:)];
     edgePanGestureRecognizer.delegate = self;
     edgePanGestureRecognizer.edges = UIRectEdgeLeft;
@@ -33,7 +31,7 @@
     
     [self.navigationController.navigationBar setTitleTextAttributes: [NSDictionary dictionaryWithObjectsAndKeys:
                                                                       [UIColor whiteColor], NSForegroundColorAttributeName, nil]];
-    self.navigationItem.title = @"Weex Playground";
+    self.navigationItem.title = @"Weex Demo";
     
     if (self.navigationItem.leftBarButtonItem) return;
     
@@ -47,14 +45,12 @@
     self.navigationItem.leftBarButtonItems = @[leftItem];
 }
 
-- (void)edgePanGesture:(UIScreenEdgePanGestureRecognizer*)edgePanGestureRecognizer
-{
+- (void)edgePanGesture:(UIScreenEdgePanGestureRecognizer*)edgePanGestureRecognizer{
     [self.navigationController popViewControllerAnimated:YES];
 }
 
 #pragma mark- UIGestureRecognizerDelegate
-- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer
-{
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer{
     if (self.navigationController && [self.navigationController.viewControllers count] == 1) {
         return NO;
     }
@@ -64,8 +60,7 @@
 #pragma mark -
 #pragma mark - UIBarButtonItems
 
-- (UIBarButtonItem *)leftBarButtonItem
-{
+- (UIBarButtonItem *)leftBarButtonItem {
     UIBarButtonItem *leftItem = objc_getAssociatedObject(self, _cmd);
     
     if (!leftItem) {
@@ -81,8 +76,7 @@
     return leftItem;
 }
 
-- (UIBarButtonItem *)backButtonItem
-{
+- (UIBarButtonItem *)backButtonItem {
     UIBarButtonItem *backButtonItem = objc_getAssociatedObject(self, _cmd);
     if (!backButtonItem) {
         backButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"back"]
@@ -97,14 +91,12 @@
 #pragma mark -
 #pragma mark - UIBarButtonItem actions
 
-- (void)scanQR:(id)sender
-{
+- (void)scanQR:(id)sender {
     WXScannerVC * scanViewController = [[WXScannerVC alloc] init];
-    [self.navigationController pushViewController:scanViewController animated:YES];
+    [self.navigationController pushViewController:scanViewController animated:NO];
 }
 
-- (void)backButtonClicked:(id)sender
-{
+- (void)backButtonClicked:(id)sender {
     [self.navigationController popViewControllerAnimated:YES];
 }
 

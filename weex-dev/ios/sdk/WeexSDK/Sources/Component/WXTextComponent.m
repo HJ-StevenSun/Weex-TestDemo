@@ -29,7 +29,6 @@
         
         self.opaque = NO;
         self.contentMode = UIViewContentModeRedraw;
-        self.textStorage = [NSTextStorage new];
     }
     return self;
 }
@@ -65,14 +64,6 @@
     UIGraphicsEndImageContext();
     
     return image;
-}
-
-- (void)setTextStorage:(NSTextStorage *)textStorage
-{
-    if (_textStorage != textStorage) {
-        _textStorage = textStorage;
-        [self setNeedsDisplay];
-    }
 }
 
 - (NSString *)description
@@ -270,22 +261,23 @@ do {\
     } else if(_textDecoration == WXTextDecorationLineThrough){
         [attributedString addAttribute:NSStrikethroughStyleAttributeName value:@(NSUnderlinePatternSolid | NSUnderlineStyleSingle) range:NSMakeRange(0, string.length)];
     }
-    
-    NSMutableParagraphStyle *paragraphStyle = [NSMutableParagraphStyle new];
     if (_textAlign) {
+        NSMutableParagraphStyle *paragraphStyle = [NSMutableParagraphStyle new];
         paragraphStyle.alignment = _textAlign;
-    }
-    
-    if (_lineHeight) {
-        paragraphStyle.maximumLineHeight = _lineHeight;
-        paragraphStyle.minimumLineHeight = _lineHeight;
-    }
-    
-    if (_lineHeight || _textAlign) {
         [attributedString addAttribute:NSParagraphStyleAttributeName
                                  value:paragraphStyle
                                  range:(NSRange){0, attributedString.length}];
     }
+    
+    if (_lineHeight) {
+        NSMutableParagraphStyle *paragraphStyle = [NSMutableParagraphStyle new];
+        paragraphStyle.maximumLineHeight = _lineHeight;
+        paragraphStyle.minimumLineHeight = _lineHeight;
+        [attributedString addAttribute:NSParagraphStyleAttributeName
+                                 value:paragraphStyle
+                                 range:(NSRange){0, attributedString.length}];
+    }
+    
     
     return attributedString;
 }
@@ -339,7 +331,6 @@ do {\
 
 - (void)_frameDidCalculated:(BOOL)isChanged
 {
-    [super _frameDidCalculated:isChanged];
     [self syncTextStorageForView];
 }
 

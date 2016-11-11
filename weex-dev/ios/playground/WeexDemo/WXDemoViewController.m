@@ -5,7 +5,7 @@
  * This source code is licensed under the Apache Licence 2.0.
  * For the full copyright and license information,please view the LICENSE file in the root directory of this source tree.
  */
-
+#import "QRCode_ViewController.h"
 #import "WXDemoViewController.h"
 #import <WeexSDK/WXSDKInstance.h>
 #import <WeexSDK/WXSDKEngine.h>
@@ -14,9 +14,10 @@
 #import <WeexSDK/WXSDKManager.h>
 #import "UIViewController+WXDemoNaviBar.h"
 #import "DemoDefine.h"
+#import "WXEventModule.h"
 
 
-@interface WXDemoViewController () <UIScrollViewDelegate, UIWebViewDelegate>
+@interface WXDemoViewController () <UIScrollViewDelegate, UIWebViewDelegate,WXESlectorDelegate>
 @property (nonatomic, strong) WXSDKInstance *instance;
 @property (nonatomic, strong) UIView *weexView;
 
@@ -44,6 +45,7 @@
 {
     [super viewDidLoad];
     
+    
     [self setupNaviBar];
     [self setupRightBarItem];
     self.view.backgroundColor = [UIColor whiteColor];
@@ -51,6 +53,13 @@
     _weexHeight = self.view.frame.size.height - 64;
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(notificationRefreshInstance:) name:@"RefreshInstance" object:nil];
+    WXEventModule *moudle=[[WXEventModule alloc]init];
+    
+    
+    moudle.delegate=self;
+    
+    
+    
     
     [self render];
 }
@@ -92,6 +101,8 @@
 
 - (void)render
 {
+    
+    
     CGFloat width = self.view.frame.size.width;
     [_instance destroyInstance];
     _instance = [[WXSDKInstance alloc] init];
@@ -122,7 +133,7 @@
     };
     
     _instance.renderFinish = ^(UIView *view) {
-         WXLogDebug(@"%@", @"Render Finish...");
+        NSLog(@"render finish");
         [weakSelf updateInstanceState:WeexInstanceAppear];
     };
     
@@ -134,7 +145,7 @@
         return;
     }
     NSURL *URL = [self testURL: [self.url absoluteString]];
-    NSString *randomURL = [NSString stringWithFormat:@"%@%@random=%d",URL.absoluteString,URL.query?@"&":@"?",arc4random()];
+    NSString *randomURL = [NSString stringWithFormat:@"%@?random=%d",URL.absoluteString,arc4random()];
     [_instance renderWithURL:[NSURL URLWithString:randomURL] options:@{@"bundleUrl":URL.absoluteString} data:nil];
 }
 
@@ -162,7 +173,7 @@
 
 - (void)setupRightBarItem
 {
-    if ([self.url.scheme isEqualToString:@"http"]) {
+    if ([WXDebugTool isDebug]){
         [self loadRefreshCtl];
     }
 }
@@ -239,5 +250,13 @@
 - (void)notificationRefreshInstance:(NSNotification *)notification {
     [self refreshWeex];
 }
-
+#pragma mark - WXESlectorDelegate
+-(void)PushToQRView
+{
+    NSLog(@"-----------------是否进入代理-------------------------------------------------------");
+    
+    //QRCode_ViewController *qrcode =[[QRCode_ViewController alloc]init];
+    
+    //[self.navigationController pushViewController:qrcode animated:YES];
+}
 @end

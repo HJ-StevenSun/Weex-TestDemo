@@ -21,7 +21,6 @@
 {
 @package
     NSString *_type;
-    NSMutableArray *_subcomponents;
     /**
      *  Layout
      */
@@ -103,7 +102,7 @@
 
 - (void)_willDisplayLayer:(CALayer *)layer;
 
-- (void)_unloadViewWithReusing:(BOOL)isReusing;
+- (void)_unloadView;
 
 - (id<WXScrollerProtocol>)ancestorScroller;
 

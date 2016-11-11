@@ -21,7 +21,6 @@
 #import "WXAssert.h"
 #import "WXThreadSafeMutableDictionary.h"
 #import "WXThreadSafeMutableArray.h"
-#import "WXTransform.h"
 #import <pthread/pthread.h>
 
 #pragma clang diagnostic ignored "-Wincomplete-implementation"
@@ -43,6 +42,7 @@
     pthread_mutex_t _propertyMutex;
     pthread_mutexattr_t _propertMutexAttr;
     
+    NSMutableArray *_subcomponents;
     __weak WXComponent *_supercomponent;
     __weak id<WXScrollerProtocol> _ancestorScroller;
     __weak WXSDKInstance *_weexInstance;
@@ -121,11 +121,6 @@
     return styles;
 }
 
-- (NSString *)type
-{
-    return _type;
-}
-
 - (NSDictionary *)attributes
 {
     NSDictionary *attributes;
@@ -188,12 +183,7 @@
             _view.backgroundColor = _backgroundColor;
         }
         
-        if (_transform) {
-            _layer.transform = [[WXTransform new] getTransform:_transform withView:_view withOrigin:_transformOrigin];
-        }
-        
         _view.wx_component = self;
-        _view.wx_ref = self.ref;
         _layer.wx_component = self;
         
         [self _initEvents:self.events];
@@ -213,15 +203,17 @@
             if (self.supercomponent && !((WXComponent *)self.supercomponent)->_lazyCreateView) {
                 NSArray *subcomponents = ((WXComponent *)self.supercomponent).subcomponents;
                 
-                NSInteger index = [subcomponents indexOfObject:self];
+                NSInteger index;
+                pthread_mutex_lock(&_propertyMutex);
+                index = [subcomponents indexOfObject:self];
+                pthread_mutex_unlock(&_propertyMutex);
+                
                 if (index != NSNotFound) {
                     [((WXComponent *)self.supercomponent).view insertSubview:_view atIndex:index];
                 }
             }
-            
-            NSArray *subcomponents = self.subcomponents;
-            for (int i = 0; i < subcomponents.count; i++) {
-                WXComponent *subcomponent = subcomponents[i];
+            for (int i = 0; i < self.subcomponents.count; i++) {
+                WXComponent *subcomponent = self.subcomponents[i];
                 [self insertSubview:subcomponent atIndex:i];
             }
         }
@@ -234,12 +226,7 @@
 
 - (void)_handleFirstScreenTime
 {
-    if (WX_MONITOR_INSTANCE_PERF_IS_RECORDED(WXPTFirstScreenRender, self.weexInstance)) {
-        return;
-    }
-    
-    CGPoint absolutePosition = [self.supercomponent.view convertPoint:_view.frame.origin toView:_weexInstance.rootView];
-    if (absolutePosition.y + _view.frame.size.height > self.weexInstance.rootView.frame.size.height + 1) {
+    if (self.absolutePosition.y > self.weexInstance.rootView.frame.size.height) {
         WX_MONITOR_INSTANCE_PERF_END(WXPTFirstScreenRender, self.weexInstance);
     }
 }
@@ -270,7 +257,7 @@
 {
     NSArray<WXComponent *> *subcomponents;
     pthread_mutex_lock(&_propertyMutex);
-    subcomponents = [_subcomponents copy];
+    subcomponents = _subcomponents;
     pthread_mutex_unlock(&_propertyMutex);
     
     return subcomponents;
@@ -300,16 +287,12 @@
     [self setNeedsLayout];
 }
 
-- (void)_removeSubcomponent:(WXComponent *)subcomponent
-{
-    pthread_mutex_lock(&_propertyMutex);
-    [_subcomponents removeObject:subcomponent];
-    pthread_mutex_unlock(&_propertyMutex);
-}
-
 - (void)_removeFromSupercomponent
 {
-    [self.supercomponent _removeSubcomponent:self];
+    pthread_mutex_lock(&_propertyMutex);
+    [self.supercomponent->_subcomponents removeObject:self];
+    pthread_mutex_unlock(&_propertyMutex);
+    
     [self.supercomponent _recomputeCSSNodeChildren];
     [self.supercomponent setNeedsLayout];
     
@@ -440,18 +423,6 @@
 {
     id weakWrapper = [[WXWeakObjectWrapper alloc] initWithWeakObject:wx_component];
     objc_setAssociatedObject(self, @selector(wx_component), weakWrapper, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (NSString *)wx_ref
-{
-    WXWeakObjectWrapper *weakWrapper = objc_getAssociatedObject(self, @selector(wx_ref));
-    return [weakWrapper weakObject];
-}
-
-- (void)setWx_ref:(NSString *)wx_ref
-{
-    id weakWrapper = [[WXWeakObjectWrapper alloc] initWithWeakObject:wx_ref];
-    objc_setAssociatedObject(self, @selector(wx_ref), weakWrapper, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 @end
